@@ -1,7 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import { ModeWatcher } from 'mode-watcher';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon.png';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 
 	let { children } = $props();
@@ -9,6 +9,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<title>BookTracer - Simple book tracking</title>
 </svelte:head>
 
 <ModeWatcher />
