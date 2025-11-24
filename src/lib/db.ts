@@ -10,24 +10,33 @@ CREATE TABLE IF NOT EXISTS Books (
     title TEXT NOT NULL,
     author TEXT,
     isbn TEXT,
+    cover_url TEXT,
     total_pages INTEGER NOT NULL,
-    current_page INTEGER DEFAULT 0,
+    current_page INTEGER DEFAULT NULL,
     started_at TEXT,
     finished_at TEXT,
-    cover_url TEXT
+    updated_at TEXT
 );
 `);
+
+db.exec(
+	`
+        ALTER TABLE Books ADD COLUMN updated_at TEXT;
+        `,
+	(_) => {}
+);
 
 export const BookSchema = z.object({
 	id: z.number().int(), // autoincrement
 	title: z.string().min(1),
 	author: z.string(),
 	isbn: z.string(),
+	cover_url: z.string(),
 	total_pages: z.number().int().min(1),
-	current_page: z.number().int().min(0).default(0),
+	current_page: z.number().int().min(0).nullable(),
 	started_at: z.string().nullable(),
 	finished_at: z.string().nullable(),
-	cover_url: z.string()
+	updated_at: z.string().nullable()
 });
 
 export type Book = z.infer<typeof BookSchema>;
@@ -61,7 +70,7 @@ export function updateProgress(b: Book): Promise<{ error: boolean }> {
 
 			if (res.error || foundBook == null) return resolve({ error: true });
 
-			if (b.current_page == 0) foundBook.started_at = Date.now().toString();
+			if (foundBook.current_page == null) foundBook.started_at = Date.now().toString();
 
 			foundBook.current_page = b.current_page;
 
@@ -69,7 +78,7 @@ export function updateProgress(b: Book): Promise<{ error: boolean }> {
 
 			const stmt = db.prepare(
 				`UPDATE Books
-				 SET current_page = ?, finished_at = ?, started_at = ?
+				 SET current_page = ?, finished_at = ?, started_at = ?, updated_at = ?
 				 WHERE id = ?`
 			);
 
@@ -77,6 +86,7 @@ export function updateProgress(b: Book): Promise<{ error: boolean }> {
 				foundBook.current_page,
 				foundBook.finished_at,
 				foundBook.started_at,
+				Date.now().toString(),
 				foundBook.id,
 				(err: Error | null) => {
 					if (err) return resolve({ error: true });
@@ -117,7 +127,7 @@ export function getBookById(id: number): Promise<{ error: boolean; book: Book | 
 
 export async function getBooks(): Promise<{ error: boolean; books: Book[] | null }> {
 	return new Promise((resolve, _) => {
-		db.all('SELECT * FROM Books', [], (err, rows) => {
+		db.all('SELECT * FROM Books ORDER BY updated_at DESC', [], (err, rows) => {
 			if (err) return resolve({ error: true, books: null });
 
 			try {

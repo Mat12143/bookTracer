@@ -3,6 +3,7 @@ FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
+RUN mkdir data
 
 # Copy package files and install dependencies
 COPY package.json package-lock.json ./
@@ -18,6 +19,7 @@ RUN npm run build
 FROM node:22-alpine
 
 WORKDIR /app
+RUN mkdir data
 
 # Install only production dependencies
 COPY package.json package-lock.json ./

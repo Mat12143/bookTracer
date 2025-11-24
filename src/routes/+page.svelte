@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Book, Plus, X } from '@lucide/svelte';
+	import { Bomb, Book, Plus, X } from '@lucide/svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import BookView from '$lib/components/BookView.svelte';
 	import { toast } from 'svelte-sonner';
@@ -61,6 +61,7 @@
 				</div>
 			</div>
 			<Button
+				disabled={data.books == null}
 				class="hover:scale-[1.02]"
 				onclick={() => {
 					if (status == 'books') status = 'add';
@@ -80,11 +81,24 @@
 	{#if status == 'books'}
 		<div class="flex flex-col gap-5">
 			{#if data.books}
-				{#each data.books as b}
+				{#each data.books.filter((b) => {
+					return b.current_page != b.total_pages;
+				}) as b}
+					<BookView book={b} />
+				{/each}
+				<Separator class="my-4" />
+				{#each data.books.filter((b) => {
+					return b.current_page == b.total_pages;
+				}) as b}
 					<BookView book={b} />
 				{/each}
 			{:else}
-				<p>Error while loading books</p>
+				<div
+					class="flex h-14 flex-row items-center gap-3 rounded-md border-2 border-red-500/20 bg-red-700/20 p-4"
+				>
+					<Bomb class="text-red-400" />
+					<p class="text-red-400">Error while loading books</p>
+				</div>
 			{/if}
 		</div>
 	{:else if status == 'add'}

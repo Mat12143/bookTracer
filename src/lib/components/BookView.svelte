@@ -10,7 +10,8 @@
 
 	let { book }: { book: Book } = $props();
 
-	let current_page = $state(book.current_page);
+	let current_page = $state(book.current_page || 0);
+
 	let progress = $derived(Math.round((current_page / book.total_pages) * 100));
 	let progressColor = $derived(
 		progress < 30
@@ -43,7 +44,9 @@
 					</span>
 				</div>
 				<Progress value={book.current_page} class="mb-2 h-2" max={book.total_pages} />
-				<p class="text-sm text-muted-foreground">{book.current_page} of {book.total_pages} pages</p>
+				<p class="text-sm text-muted-foreground">
+					{book.current_page || 0} of {book.total_pages} pages
+				</p>
 			</div>
 		</div>
 	</Card.Content>
@@ -77,7 +80,7 @@
 							variant="outline"
 							size="icon"
 							onclick={() => (current_page = Math.max(0, current_page - 10))}
-							disabled={current_page <= 0}
+							disabled={current_page <= 0 || book.current_page == book.total_pages}
 						>
 							<Minus class="h-4 w-4" />
 						</Button>
@@ -91,6 +94,7 @@
 								min="0"
 								max={book.total_pages}
 								class="h-14 text-center text-2xl font-bold"
+								disabled={book.current_page == book.total_pages}
 							/>
 							<Input id="id" name="id" type="number" bind:value={book.id} class="hidden" />
 						</div>
@@ -99,7 +103,7 @@
 							variant="outline"
 							size="icon"
 							onclick={() => (current_page = Math.min(book.total_pages, current_page + 10))}
-							disabled={current_page >= book.total_pages}
+							disabled={current_page >= book.total_pages || book.current_page == book.total_pages}
 						>
 							<Plus class="h-4 w-4" />
 						</Button>
@@ -107,17 +111,30 @@
 					<p class="text-center text-sm text-muted-foreground">
 						of {book.total_pages} total pages
 					</p>
+					{#if book.finished_at && book.started_at}
+						<div
+							class="my-3 flex h-14 w-full flex-col items-center justify-center rounded-md border-2 border-green-700/20 bg-green-500/20 text-green-400"
+						>
+							<p class="font-medium">
+								🎉 Finished on {new Date(parseInt(book.finished_at)).toDateString()}
+							</p>
+						</div>
+					{/if}
 				</div>
 			</div>
 
 			<Dialog.Footer class="flex gap-2">
-				<Button variant="outline" onclick={() => (open = false)} class="flex-1">Dismiss</Button>
-				<Button
-					class="flex-1 from-purple-500 via-pink-500 to-orange-500 hover:opacity-90"
-					type="submit"
-				>
-					Save
-				</Button>
+				{#if book.finished_at == null}
+					<Button variant="outline" onclick={() => (open = false)} class="flex-1">Dismiss</Button>
+					<Button
+						class="flex-1 from-purple-500 via-pink-500 to-orange-500 hover:opacity-90"
+						type="submit"
+					>
+						Save
+					</Button>
+				{:else}
+					<Button onclick={() => (open = false)} class="flex-1">Close</Button>
+				{/if}
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
