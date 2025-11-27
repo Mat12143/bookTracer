@@ -111,7 +111,7 @@
 					<p class="text-center text-sm text-muted-foreground">
 						of {book.total_pages} total pages
 					</p>
-					{#if book.finished_at && book.started_at}
+					{#if book.finished_at}
 						<div
 							class="my-3 flex h-14 w-full flex-col items-center justify-center rounded-md border-2 border-green-700/20 bg-green-500/20 text-green-400"
 						>
