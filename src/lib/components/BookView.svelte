@@ -12,7 +12,9 @@
 
 	let current_page = $state(book.current_page || 0);
 
-	let progress = $derived(Math.round((current_page / book.total_pages) * 100));
+	let progress = $derived(
+		Math.round((book.current_page == null ? 0 : book.current_page / book.total_pages) * 100)
+	);
 	let progressColor = $derived(
 		progress < 30
 			? 'text-red-400 bg-red-500/20'
